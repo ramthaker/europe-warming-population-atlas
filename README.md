@@ -1,5 +1,7 @@
 # Europe's Warming and People Map
 
+![Editorial map illustration of Europe with a subtle climate grid and warming gradient](docs/images/europe-warming-population-cover.jpg)
+
 An interactive map for comparing EURO-CORDEX annual mean temperature scenarios with 2020 population distribution across the full EURO-CORDEX Europe domain.
 
 The map is an exploration tool. It shows model scenarios, not a weather forecast or a health-risk assessment.
@@ -10,7 +12,7 @@ The map is an exploration tool. It shows model scenarios, not a weather forecast
 - The initial ensemble selects three EUR-11 pairs on the same CLMcom CCLM4-8-17 regional grid: CNRM-CERFACS-CNRM-CM5, ICHEC-EC-EARTH, and MPI-M-MPI-ESM-LR. The MOHC-HadGEM2-ES archive ends during 2099, so it is omitted to keep the same complete ensemble across all periods. The pipeline respects each run's native calendar, including 360-day calendars.
 - **GHSL GHS-POP:** 2020 gridded residential population. Pixel-center assignment allocates each raster count once to a climate cell and verifies the total within the climate-grid footprint.
 - Baseline: 1981–2000. Future windows: 2041–2060 and 2081–2100.
-- Source datasets are public AWS S3 data. The app serves a derived static PMTiles archive from S3 through CloudFront.
+- Source datasets are public objects in AWS S3. CDK defines private S3 and CloudFront delivery for the app and archive; the generated archive is local and has not been uploaded to the public distribution.
 
 Source attribution: EURO-CORDEX monthly CMIP5 2 m air temperature, accessed 2026-10-31; GHSL GHS-POP 2020 layer, European Commission Joint Research Centre, accessed 2026-10-31. The [GHSL registry](https://registry.opendata.aws/ghs-pop/) lists CC BY 4.0. Follow the [EURO-CORDEX registry](https://registry.opendata.aws/euro-cordex/) data-use terms and cite the source dataset as required before redistribution.
 
@@ -21,6 +23,13 @@ Source attribution: EURO-CORDEX monthly CMIP5 2 m air temperature, accessed 2026
 - `infra/` — AWS CDK TypeScript app for S3, CloudFront, Amazon Location map, and restricted public map key.
 - `data/` — generated files (ignored by Git).
 - `docs/DEMO.md` — under-three-minute recording outline.
+- `docs/images/` — Builder Center cover art and high-level architecture diagram.
+
+## High-level architecture
+
+![Architecture: public S3 datasets flow through the Python pipeline into PMTiles and the MapLibre app; Amazon Location Service supplies the basemap, with S3 and CloudFront as the CDK delivery path](docs/images/architecture.svg)
+
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the data flow and the current publication status.
 
 ## Run the web app
 

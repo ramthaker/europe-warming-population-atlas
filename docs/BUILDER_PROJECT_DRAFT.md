@@ -12,6 +12,12 @@ Explore annual warming scenarios from EURO-CORDEX alongside GHSL 2020 population
 
 ## Body
 
+### At a glance
+
+![Europe Warming and Population Atlas cover](https://raw.githubusercontent.com/ramthaker/europe-warming-population-atlas/main/docs/images/europe-warming-population-cover.jpg)
+
+![High-level architecture of the Europe Warming and Population Atlas](https://raw.githubusercontent.com/ramthaker/europe-warming-population-atlas/main/docs/images/architecture.svg)
+
 ### What this map reveals
 
 Climate models describe change across large grid cells, while population data shows where people live. This atlas puts those datasets on the same map so visitors can compare the patterns across Europe, switch between emissions scenarios and future periods, and inspect individual cells.
