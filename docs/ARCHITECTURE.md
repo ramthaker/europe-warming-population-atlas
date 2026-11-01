@@ -8,7 +8,7 @@
 2. The Python pipeline pairs three complete EUR-11 climate-model runs, computes annual-mean anomalies against 1981–2000 for 2041–2060 and 2081–2100, and summarizes the ensemble percentiles.
 3. The pipeline aggregates each GHSL pixel count once to a climate cell and checks population-total preservation within the climate grid.
 4. The derived cell attributes are packed into a local PMTiles archive. The React app loads that vector data through MapLibre GL JS; Amazon Location Service provides the basemap.
-5. AWS CDK defines a private S3 origin and CloudFront distribution for the static app and archive. The Amazon Location API key is restricted to map reads and allowed referrers.
+5. AWS CDK deploys the static app and PMTiles archive to S3 behind CloudFront. The Amazon Location API key is restricted to map reads and the live site's referrer.
 
 ## Agent request path
 
@@ -19,15 +19,15 @@
 
 No conversation store is configured. The prompt should not contain personal or medical details. The agent is instructed to keep long-range scenarios separate from current weather alerts and to defer local services and health decisions to qualified authorities.
 
-## Current state and deployment boundary
+## Live deployment
 
-- Local map archive: built and present under ignored `data/` files.
-- Static site and S3/CloudFront distribution: CDK infrastructure is defined; the updated agent-enabled build and archive are not published.
-- Strands API: implemented as a local FastAPI service. It is not deployed and has no public endpoint.
-- Bedrock: invoked only when a local user submits a request; model access, region, and charges depend on the user's AWS account.
+- Live app: https://d1p7fe2ijqxr2z.cloudfront.net
+- Static app and PMTiles: S3 private origin behind CloudFront. The archive is available at `/climate-cells.pmtiles`.
+- Strands API: Python FastAPI runs in Lambda and is reached through the same CloudFront site at `/api/brief`; `/api/health` reports service readiness.
+- Bedrock: the Lambda execution role invokes the EU Amazon Nova Lite inference profile only after a visitor submits a brief request. Inference may incur AWS charges.
 - Public demo video: the script is in `DEMO.md`; recording and upload remain outstanding.
 
-Before public release, deploy the API behind an HTTPS service endpoint, use an execution role with least-privilege model invocation permissions, configure HTTPS-only CORS for the site, set the production API URL, publish the archive, and verify the full flow. Deployment is intentionally a separate approval step.
+The CloudFront API behavior forwards requests to a Lambda Function URL protected with CloudFront Origin Access Control. The browser uses the same origin, so no public function URL or separate API key is exposed.
 
 ## Scale and limits
 

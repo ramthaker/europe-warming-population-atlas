@@ -187,21 +187,24 @@ function App() {
     setAgentBrief('');
     setAgentStatus('The Strands agent is checking the selected cell and its community guidance…');
     try {
-      const response = await fetch(`${import.meta.env.VITE_AGENT_API_URL || 'http://127.0.0.1:8000'}/api/brief`, {
+      const requestBody = JSON.stringify({
+        question: agentQuestion.trim(),
+        cell: {
+          cell_id: String(selected.cell_id),
+          scenario,
+          period,
+          p10_c: Number(selected[metricKeys.low]),
+          median_c: Number(selected[metricKeys.median]),
+          p90_c: Number(selected[metricKeys.high]),
+          population_2020: Math.round(Number(selected.population_2020)),
+        },
+      });
+      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(requestBody));
+      const payloadHash = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+      const response = await fetch(`${import.meta.env.VITE_AGENT_API_URL || ''}/api/brief`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question: agentQuestion.trim(),
-          cell: {
-            cell_id: String(selected.cell_id),
-            scenario,
-            period,
-            p10_c: Number(selected[metricKeys.low]),
-            median_c: Number(selected[metricKeys.median]),
-            p90_c: Number(selected[metricKeys.high]),
-            population_2020: Math.round(Number(selected.population_2020)),
-          },
-        }),
+        headers: { 'Content-Type': 'application/json', 'x-amz-content-sha256': payloadHash },
+        body: requestBody,
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.detail || 'The agent could not create a brief.');

@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Literal
 
 from dotenv import load_dotenv
+from botocore.exceptions import ClientError
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -77,7 +78,7 @@ app.add_middleware(
 
 @app.get("/api/health")
 def health() -> dict[str, str]:
-    return {"status": "ready", "agent": "strands", "model": os.getenv("STRANDS_MODEL_ID", "global.anthropic.claude-sonnet-5")}
+    return {"status": "ready", "agent": "strands", "model": os.getenv("STRANDS_MODEL_ID", "eu.amazon.nova-lite-v1:0")}
 
 
 def make_evidence_tool(cell: CellContext):
@@ -136,7 +137,7 @@ Always distinguish long-term model scenarios from current weather and official h
 
 @app.post("/api/brief", response_model=BriefResponse)
 def create_brief(request: BriefRequest) -> BriefResponse:
-    model_id = os.getenv("STRANDS_MODEL_ID", "global.anthropic.claude-sonnet-5")
+    model_id = os.getenv("STRANDS_MODEL_ID", "eu.amazon.nova-lite-v1:0")
     region = os.getenv("STRANDS_REGION", os.getenv("AWS_DEFAULT_REGION", "eu-central-1"))
     try:
         model = BedrockModel(
@@ -154,8 +155,13 @@ def create_brief(request: BriefRequest) -> BriefResponse:
         result = agent(request.question)
         return BriefResponse(brief=str(result), model_id=model_id, evidence=request.cell)
     except Exception as error:  # noqa: BLE001 - translate provider errors for the UI
-        # Keep provider exception details out of the public response.
-        print(f"Strands request failed ({type(error).__name__}).")
+        # Keep prompts out of logs while recording actionable provider diagnostics.
+        if isinstance(error, ClientError):
+            provider_error = error.response.get("Error", {})
+            detail = str(provider_error.get("Message", ""))[:500]
+            print(f"Strands provider failure ({provider_error.get('Code', 'ClientError')}): {detail}")
+        else:
+            print(f"Strands request failed ({type(error).__name__}).")
         raise HTTPException(
             status_code=503,
             detail="The resilience agent could not reach its model. Check AWS credentials, region, and Bedrock model access.",

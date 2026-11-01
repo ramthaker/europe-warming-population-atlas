@@ -4,12 +4,12 @@
 
 **Format:** screen recording with voiceover; show the live map and a real agent response.
 
-**Current status:** script ready; video recording and public upload remain to be done.
+**Current status:** the live app and agent API are deployed; video recording and public upload remain to be done.
 
 ## Before recording
 
-- Run the app and local API using the README instructions. Confirm the climate archive and Amazon Location basemap load.
-- Confirm AWS profile `pulse-personal`, region `eu-central-1`, Bedrock model access, and `STRANDS_MODEL_ID` are configured. A real brief request invokes Bedrock and may incur charges.
+- Open the live app at https://d1p7fe2ijqxr2z.cloudfront.net. Confirm the climate archive and Amazon Location basemap load.
+- Confirm the `/api/health` endpoint reports ready. A real brief request invokes Amazon Bedrock and may incur AWS charges.
 - Select a cell with a nonzero population estimate. Keep personal or account information out of the recording.
 - Close terminals, secret files, AWS consoles, browser developer tools, and unrelated tabs. Use a clean browser window with the map already loaded.
 - Capture at 1920×1080 if available. Keep the UI and selected-cell detail readable; zoom the page to 90–100%.
@@ -48,7 +48,7 @@
 
 ### 2:15–2:40 — How it is built and where to reuse it
 
-**On screen:** Show the architecture diagram or README section; finish on the GitHub repository URL and, once available, the public live URL.
+**On screen:** Show the architecture diagram or README section; finish on the GitHub repository URL and the public live URL.
 
 **Voiceover:** “The map combines public EURO-CORDEX and GHSL data, a Python processing pipeline, PMTiles, MapLibre, and an Amazon Location basemap. The agent is built with the Strands Agents SDK and Amazon Bedrock. The repository includes the processing method, tool code, and limitations so another community can adapt the pattern.”
 
@@ -57,5 +57,5 @@
 1. Record the complete map and agent flow in one take if possible. Trim pauses, but keep the genuine agent request and response visible.
 2. Keep the finished video below 3 minutes and make it publicly viewable without sign-in.
 3. Upload to YouTube, Vimeo, or another public video host and add the public link to the Builder Center **demo** field.
-4. Add the live app URL only after the static site, PMTiles archive, and API are deployed and verified. Do not put AWS credentials or `.env.local` values in the video, article, or repository.
+4. Include the live app URL after confirming the static site, PMTiles archive, and API work. Do not put AWS credentials or `.env.local` values in the video, article, or repository.
 5. Confirm the required Strands workshop is complete during the hackathon window before submitting; code alone does not establish workshop eligibility.

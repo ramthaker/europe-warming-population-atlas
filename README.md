@@ -36,7 +36,7 @@ The model synthesizes those tool results into a short brief and a local verifica
 
 ![HeatReady Atlas architecture: climate and population data feed the map, while a Strands agent uses map evidence and WHO guidance through Amazon Bedrock](docs/images/architecture.svg)
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the component flow and current hosting status.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the component flow and hosting details.
 
 ## Run locally
 
@@ -73,13 +73,13 @@ See [pipeline/README.md](pipeline/README.md) for source selection, manifest, and
 ## AWS services and publication status
 
 - **Amazon Location Service** supplies the MapLibre basemap with a map-only API key restricted to allowed referrers.
-- **Amazon S3 and CloudFront** are defined in CDK for static app and PMTiles delivery.
-- **Amazon Bedrock** runs the Strands agent model when a user submits a brief request. The API currently runs locally; it is not deployed as a public endpoint.
-- The climate archive is local and ignored by Git. It has not been uploaded to the public CloudFront distribution, and the refreshed agent-enabled app has not been deployed. **No deployment is performed by the local run instructions.**
+- **Amazon S3 and CloudFront** host the static app and PMTiles archive; the live API is routed through the same CloudFront domain.
+- **AWS Lambda and Amazon Bedrock** run the Strands agent when a visitor submits a brief request. Lambda uses an execution role scoped to the EU Nova Lite inference profile and its destination model ARNs.
+- The live app is [HeatReady Atlas](https://d1p7fe2ijqxr2z.cloudfront.net). The API health endpoint is available at `/api/health`. The source climate archive remains local and ignored by Git; the derived PMTiles archive is hosted in S3.
 
-Before a public launch, host the API behind an HTTPS endpoint, grant it least-privilege Bedrock invoke access using an AWS role, set `VITE_AGENT_API_URL`, enable HTTPS CORS for the site domain, upload the archive, and deploy the refreshed static app. Public publishing is a separate, approval-required step.
+The deployed API uses same-origin CloudFront routing and a Lambda execution role with least-privilege Bedrock permissions. For a different hosting setup, provide an HTTPS API endpoint and configure the browser origin and `VITE_AGENT_API_URL` accordingly.
 
-The map CDK stack defaults to `eu-central-1`. Review `npx cdk diff`, account, region, permissions, and costs before any deployment. Do not commit `.env.local`, credentials, climate files, or generated rasters.
+The map CDK stack defaults to `eu-central-1`. For changes, review `npx cdk diff`, account, region, permissions, and costs before deployment. Do not commit `.env.local`, credentials, climate files, or generated rasters.
 
 ## Interpretation limits
 
