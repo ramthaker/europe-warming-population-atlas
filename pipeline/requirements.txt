@@ -1,0 +1,12 @@
+xarray>=2025.3,<2027
+cftime>=1.6
+zarr>=3.0,<4
+s3fs>=2024.6
+rasterio>=1.4
+pyproj>=3.6
+shapely>=2.0
+numpy>=1.26
+pandas>=2.2
+pmtiles>=3.8,<4
+mapbox-vector-tile>=2.2,<3
+mercantile>=1.2,<2

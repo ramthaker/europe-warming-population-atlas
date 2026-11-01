@@ -1,0 +1,17 @@
+{
+  "name": "europe-climate-explorer-infra",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "synth": "npm run build && cdk synth"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "aws-cdk": "^2.1000.0",
+    "aws-cdk-lib": "^2.200.0",
+    "constructs": "^10.4.2",
+    "typescript": "~5.8.3",
+    "tsx": "^4.19.3"
+  }
+}
