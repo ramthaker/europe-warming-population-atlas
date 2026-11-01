@@ -2,7 +2,7 @@ export type Scenario = 'rcp45' | 'rcp85';
 export type Period = 'mid' | 'late';
 
 export interface ClimateCellProperties extends Record<string, unknown> {
-  cell_id: string;
+  cell_id: string | number;
   population_2020: number;
   warming_rcp45_mid_p10: number;
   warming_rcp45_mid_p50: number;

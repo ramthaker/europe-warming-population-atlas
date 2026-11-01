@@ -1,148 +1,88 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" role="img" aria-labelledby="title desc">
-  <title id="title">Europe Warming and Population Atlas architecture</title>
-  <desc id="desc">Public EURO-CORDEX and GHSL data flow through a Python preprocessing pipeline into a PMTiles archive and a React, MapLibre web app. Amazon Location Service provides the basemap. A CDK configured S3 and CloudFront publication path is shown with the final archive upload marked pending.</desc>
+  <title id="title">HeatReady Atlas architecture</title>
+  <desc id="desc">Public climate and population data are processed into PMTiles and displayed in a MapLibre app with Amazon Location Service. A selected map cell is passed to a FastAPI service running a Strands agent, which uses read-only climate evidence and WHO guidance tools with Amazon Bedrock. S3 and CloudFront host the static site and archive; public deployment of the agent API is pending.</desc>
   <defs>
-    <linearGradient id="warm" x1="0" x2="1">
-      <stop offset="0" stop-color="#edbd79"/>
-      <stop offset=".55" stop-color="#d87555"/>
-      <stop offset="1" stop-color="#9d4b56"/>
-    </linearGradient>
-    <linearGradient id="sea" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#e6efeb"/>
-      <stop offset="1" stop-color="#d7e4df"/>
-    </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
-      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#123536" flood-opacity=".08"/>
-    </filter>
-    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8da49b"/>
-    </marker>
-    <marker id="arrowWarm" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#c56c4d"/>
-    </marker>
+    <linearGradient id="warm" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f2d38f"/><stop offset=".55" stop-color="#dd8059"/><stop offset="1" stop-color="#8d4053"/></linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#9aa99e"/></marker>
+    <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#c46c4c"/></marker>
     <style>
-      text{font-family:Inter,"Segoe UI",Arial,sans-serif;fill:#183a3b}
-      .eyebrow{font-size:12px;font-weight:700;letter-spacing:2.2px;fill:#9b5c47}
-      .title{font-family:Georgia,"Times New Roman",serif;font-size:38px;fill:#173a3b}
-      .subtitle{font-size:15px;fill:#637a73}
-      .card{fill:#fffefa;stroke:#dce5df;stroke-width:1.2}
-      .cardTitle{font-size:19px;font-weight:700}
-      .cardKicker{font-size:11px;font-weight:700;letter-spacing:1.5px;fill:#7d9188}
-      .body{font-size:13px;fill:#536d66}
-      .small{font-size:11px;fill:#788c83}
-      .pill{font-size:11px;font-weight:600}
-      .stage{font-size:11px;font-weight:700;letter-spacing:1.6px;fill:#b76045}
-      .pathText{font-size:13px;font-weight:600}
-      .pathSmall{font-size:11px;fill:#75877f}
+      .bg{fill:#f6f4ed}.ink{fill:#183a3b}.muted{fill:#71827a}.tiny{font:12px 'DM Mono',monospace;letter-spacing:1px}.title{font:500 38px Georgia,serif;letter-spacing:-1px}.subtitle{font:15px Arial,sans-serif}.card{fill:#fffefa;stroke:#d7dfd6;stroke-width:1.5}.aws{fill:#edf1e9;stroke:#cdd9ce;stroke-width:1.5}.agent{fill:#f8eee7;stroke:#e6c8b9;stroke-width:1.5}.card-title{font:600 17px Arial,sans-serif;fill:#244847}.copy{font:13px Arial,sans-serif;fill:#687a73}.small{font:11px Arial,sans-serif;fill:#7e8c83}.line{fill:none;stroke:#9aa99e;stroke-width:2;marker-end:url(#arrow)}.line-red{fill:none;stroke:#c46c4c;stroke-width:2.5;marker-end:url(#arrow-red)}
     </style>
   </defs>
+  <rect class="bg" width="1440" height="900" rx="18"/>
+  <text x="72" y="72" class="tiny" fill="#bd6849">HEATREADY ATLAS · SYSTEM OVERVIEW</text>
+  <text x="72" y="123" class="title ink">From climate evidence to community planning</text>
+  <text x="72" y="155" class="subtitle muted">A transparent map-to-agent pattern for long-term heat preparedness context</text>
 
-  <rect width="1440" height="900" rx="28" fill="#f5f4ee"/>
-  <circle cx="1350" cy="68" r="180" fill="#e9eee8" opacity=".55"/>
-  <circle cx="54" cy="820" r="150" fill="#eee8dc" opacity=".55"/>
+  <text x="72" y="214" class="tiny" fill="#819087">01 / PUBLIC DATA + PROCESSING</text>
+  <rect x="72" y="235" width="245" height="116" rx="12" class="card"/>
+  <rect x="72" y="370" width="245" height="116" rx="12" class="card"/>
+  <text x="95" y="274" class="card-title">EURO-CORDEX</text>
+  <text x="95" y="299" class="copy">Monthly 2 m temperature</text>
+  <text x="95" y="321" class="small">CMIP5 historical + RCP runs · S3</text>
+  <text x="95" y="409" class="card-title">GHSL GHS-POP</text>
+  <text x="95" y="434" class="copy">2020 population grid</text>
+  <text x="95" y="456" class="small">Pixel counts aggregated once · S3</text>
 
-  <text x="64" y="57" class="eyebrow">EUROPE WARMING &amp; POPULATION ATLAS</text>
-  <text x="64" y="108" class="title">From open data to an explorable map</text>
-  <text x="64" y="139" class="subtitle">One matched climate grid connects modelled warming, population context, and an interactive map.</text>
+  <rect x="380" y="285" width="245" height="150" rx="12" class="aws"/>
+  <text x="405" y="327" class="tiny" fill="#bd6849">PYTHON PIPELINE</text>
+  <text x="405" y="358" class="card-title">Pair, compare, preserve</text>
+  <text x="405" y="385" class="copy">Annual anomalies · ensemble range</text>
+  <text x="405" y="408" class="small">Population-total conservation check</text>
+  <path d="M317 293H350V320H380" class="line"/><path d="M317 428H350V399H380" class="line"/>
 
-  <!-- Main data path -->
-  <g filter="url(#shadow)">
-    <rect x="64" y="184" width="286" height="406" rx="20" class="card"/>
-    <rect x="376" y="184" width="322" height="406" rx="20" class="card"/>
-    <rect x="724" y="184" width="250" height="406" rx="20" class="card"/>
-    <rect x="1000" y="184" width="376" height="406" rx="20" class="card"/>
-  </g>
+  <rect x="684" y="285" width="205" height="150" rx="12" class="card"/>
+  <rect x="706" y="309" width="38" height="38" rx="8" fill="url(#warm)"/>
+  <text x="758" y="327" class="tiny" fill="#bd6849">MAP ARCHIVE</text>
+  <text x="706" y="377" class="card-title">PMTiles vector cells</text>
+  <text x="706" y="403" class="small">Warming percentiles + residents</text>
+  <path d="M625 360H684" class="line"/>
 
-  <!-- Stage 1 -->
-  <text x="88" y="220" class="stage">01  /  INPUT DATA</text>
-  <text x="88" y="253" class="cardTitle">Public AWS S3 data</text>
-  <rect x="88" y="273" width="238" height="122" rx="14" fill="#eef4f0"/>
-  <circle cx="111" cy="299" r="7" fill="#507b6f"/>
-  <text x="128" y="303" class="cardKicker">EURO-CORDEX · CMIP5</text>
-  <text x="106" y="334" class="body">Monthly 2 m air temperature</text>
-  <text x="106" y="356" class="body">Historical + RCP 4.5 + RCP 8.5</text>
-  <text x="106" y="378" class="small">EUR-11 · same regional model grid</text>
-  <rect x="88" y="411" width="238" height="122" rx="14" fill="#f5f0e7"/>
-  <circle cx="111" cy="437" r="7" fill="#c3784d"/>
-  <text x="128" y="441" class="cardKicker">GHSL · GHS-POP 2020</text>
-  <text x="106" y="472" class="body">1 km population counts</text>
-  <text x="106" y="494" class="body">European Commission · JRC</text>
-  <text x="106" y="516" class="small">Public raster in EPSG:54009</text>
-  <text x="88" y="566" class="small">Sources: EURO-CORDEX registry + GHSL registry</text>
+  <text x="942" y="214" class="tiny" fill="#819087">02 / EXPLORE THE MAP</text>
+  <rect x="942" y="235" width="416" height="204" rx="12" class="card"/>
+  <text x="970" y="274" class="tiny" fill="#bd6849">BROWSER · REACT + TYPESCRIPT</text>
+  <text x="970" y="307" class="card-title">MapLibre GL JS</text>
+  <text x="970" y="333" class="copy">Scenario + period sliders · population layer</text>
+  <text x="970" y="357" class="copy">Click a cell to inspect its evidence</text>
+  <rect x="970" y="382" width="116" height="25" rx="12" fill="#edf1e9"/>
+  <text x="984" y="399" class="small">PMTiles</text>
+  <rect x="1096" y="382" width="226" height="25" rx="12" fill="#edf1e9"/>
+  <text x="1110" y="399" class="small">Amazon Location basemap</text>
+  <path d="M889 350H942" class="line"/>
 
-  <!-- Stage 2 -->
-  <text x="400" y="220" class="stage">02  /  PREPROCESS</text>
-  <text x="400" y="253" class="cardTitle">Python data pipeline</text>
-  <text x="400" y="284" class="cardKicker">THREE COMPLETE MODEL PAIRS</text>
-  <text x="400" y="315" class="body">CNRM-CM5 · EC-EARTH · MPI-ESM-LR</text>
-  <path d="M400 334 H674" stroke="#e3e9e3"/>
-  <circle cx="407" cy="360" r="4" fill="#c56c4d"/>
-  <text x="422" y="364" class="body">Day-weighted annual means</text>
-  <circle cx="407" cy="397" r="4" fill="#c56c4d"/>
-  <text x="422" y="401" class="body">Future minus 1981–2000 baseline</text>
-  <circle cx="407" cy="434" r="4" fill="#c56c4d"/>
-  <text x="422" y="438" class="body">2041–2060 and 2081–2100</text>
-  <circle cx="407" cy="471" r="4" fill="#c56c4d"/>
-  <text x="422" y="475" class="body">Ensemble p10 · median · p90</text>
-  <circle cx="407" cy="508" r="4" fill="#507b6f"/>
-  <text x="422" y="512" class="body">Pixel-center population allocation</text>
-  <rect x="400" y="540" width="270" height="29" rx="14" fill="#f5eee6"/>
-  <text x="416" y="559" class="pill" fill="#9c5b42">360-day calendars supported</text>
+  <text x="72" y="558" class="tiny" fill="#819087">03 / ASK A GROUNDED AGENT</text>
+  <rect x="72" y="581" width="270" height="161" rx="12" class="agent"/>
+  <text x="96" y="619" class="tiny" fill="#bd6849">LOCAL PROTOTYPE API</text>
+  <text x="96" y="651" class="card-title">FastAPI + Strands</text>
+  <text x="96" y="679" class="copy">Validates selected cell + question</text>
+  <text x="96" y="703" class="small">No conversation persistence</text>
 
-  <!-- Stage 3 -->
-  <text x="748" y="220" class="stage">03  /  VECTOR ARCHIVE</text>
-  <text x="748" y="253" class="cardTitle">PMTiles</text>
-  <rect x="748" y="276" width="202" height="116" rx="16" fill="url(#sea)"/>
-  <path d="M770 303 h44 v52 h-44 z M780 293 h44 v52 h-10 M790 283 h44 v52 h-10" fill="none" stroke="#4a776a" stroke-width="3" stroke-linejoin="round"/>
-  <text x="842" y="318" class="cardKicker">MAP DATA</text>
-  <text x="842" y="342" class="small">MVT · compressed</text>
-  <text x="842" y="361" class="small">HTTP range reads</text>
-  <text x="748" y="429" class="cardKicker">CURRENT BUILD</text>
-  <text x="748" y="458" class="body">174,688 climate cells</text>
-  <text x="748" y="483" class="body">4,303 vector tiles</text>
-  <text x="748" y="508" class="body">Zoom levels 4–8</text>
-  <rect x="748" y="535" width="202" height="32" rx="16" fill="#fbefe8"/>
-  <text x="764" y="556" class="pill" fill="#9d4f3c">136.9 MB · local archive</text>
+  <rect x="398" y="555" width="280" height="216" rx="12" class="card"/>
+  <text x="422" y="594" class="tiny" fill="#bd6849">READ-ONLY TOOLS</text>
+  <text x="422" y="629" class="card-title">Map-cell evidence</text>
+  <text x="422" y="653" class="copy">Exact scenario values + limits</text>
+  <path d="M422 674H652" stroke="#e1e6de"/>
+  <text x="422" y="704" class="card-title">WHO heat guidance</text>
+  <text x="422" y="728" class="copy">General planning prompts + source</text>
 
-  <!-- Stage 4 -->
-  <text x="1024" y="220" class="stage">04  /  EXPLORER</text>
-  <text x="1024" y="253" class="cardTitle">Climate Atlas web app</text>
-  <text x="1024" y="281" class="cardKicker">REACT · TYPESCRIPT · MAPLIBRE GL JS</text>
-  <rect x="1024" y="299" width="328" height="133" rx="16" fill="#eaf1ed"/>
-  <path d="M1047 330 l28 -14 23 10 28 -14 26 14 29 -12 28 13 27 -9 28 15 26 -10 26 16 -1 43 -28 12 -27 -9 -28 13 -27 -10 -29 12 -26 -13 -27 11 -29 -14 -25 11 -28 -15 z" fill="url(#warm)" opacity=".88"/>
-  <path d="M1048 383 l34 -13 30 7 30 -12 28 12 28 -10 30 13 28 -9 30 13 28 -8" fill="none" stroke="#fff8ec" stroke-width="2" opacity=".72"/>
-  <text x="1048" y="419" class="small">Transparent climate cells · basemap labels stay visible</text>
-  <text x="1024" y="466" class="body">RCP + period two-stop sliders</text>
-  <text x="1024" y="490" class="body">Warming / population layer toggle</text>
-  <text x="1024" y="514" class="body">Click a cell for range + population</text>
-  <rect x="1024" y="540" width="328" height="30" rx="15" fill="#eaf0f5"/>
-  <text x="1040" y="560" class="pill" fill="#38617a">Amazon Location · map-only key · referrer restricted</text>
+  <rect x="741" y="581" width="232" height="161" rx="12" class="aws"/>
+  <text x="765" y="619" class="tiny" fill="#bd6849">MODEL INVOCATION</text>
+  <text x="765" y="652" class="card-title">Amazon Bedrock</text>
+  <text x="765" y="680" class="copy">Strands tool-use loop</text>
+  <text x="765" y="705" class="small">Only on submitted prompt</text>
 
-  <!-- Flow arrows -->
-  <path d="M350 382 H369" fill="none" stroke="#8da49b" stroke-width="2.5" marker-end="url(#arrow)"/>
-  <path d="M698 382 H717" fill="none" stroke="#8da49b" stroke-width="2.5" marker-end="url(#arrow)"/>
-  <path d="M974 382 H993" fill="none" stroke="#8da49b" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="1038" y="581" width="320" height="161" rx="12" class="card"/>
+  <text x="1062" y="619" class="tiny" fill="#bd6849">COMMUNITY OUTPUT</text>
+  <text x="1062" y="652" class="card-title">Preparedness brief</text>
+  <text x="1062" y="680" class="copy">Actions + local facts to verify</text>
+  <text x="1062" y="705" class="small">Never an alert or health-risk score</text>
 
-  <!-- Delivery path -->
-  <rect x="64" y="628" width="1312" height="190" rx="22" fill="#edf2ee" stroke="#cbd9d1" stroke-width="1.4" stroke-dasharray="7 7"/>
-  <text x="92" y="667" class="stage">PUBLIC DELIVERY  /  AWS CDK PATH</text>
-  <text x="92" y="697" class="body">Planned delivery: static app and PMTiles from a private S3 origin through CloudFront.</text>
-  <text x="92" y="722" class="small">The infrastructure is deployed; uploading the generated climate archive and publishing the final app build remain pending.</text>
+  <path d="M1148 439V500H207V581" class="line-red"/>
+  <path d="M342 660H398" class="line-red"/>
+  <path d="M678 660H741" class="line-red"/>
+  <path d="M973 660H1038" class="line-red"/>
 
-  <rect x="92" y="750" width="253" height="46" rx="12" fill="#fffefa" stroke="#d5e0d8"/>
-  <text x="112" y="779" class="pathText">Web bundle + PMTiles</text>
-  <path d="M347 773 H380" fill="none" stroke="#8da49b" stroke-width="2.5" marker-end="url(#arrow)"/>
-  <rect x="390" y="750" width="222" height="46" rx="12" fill="#fffefa" stroke="#d5e0d8"/>
-  <text x="410" y="779" class="pathText">Private Amazon S3</text>
-  <path d="M614 773 H647" fill="none" stroke="#8da49b" stroke-width="2.5" marker-end="url(#arrow)"/>
-  <rect x="657" y="750" width="190" height="46" rx="12" fill="#fffefa" stroke="#d5e0d8"/>
-  <text x="677" y="779" class="pathText">Amazon CloudFront</text>
-  <path d="M849 773 H882" fill="none" stroke="#8da49b" stroke-width="2.5" marker-end="url(#arrow)"/>
-  <rect x="892" y="750" width="230" height="46" rx="12" fill="#fffefa" stroke="#d5e0d8"/>
-  <text x="912" y="779" class="pathText">Public URL (pending)</text>
-  <rect x="1151" y="750" width="190" height="46" rx="23" fill="#f8e8df"/>
-  <circle cx="1172" cy="773" r="5" fill="#c56c4d"/>
-  <text x="1186" y="778" class="pill" fill="#98543f">DATA UPLOAD PENDING</text>
-
-  <text x="64" y="857" class="small">Model scenarios, not forecasts. Population is map-grid context, not an estimate of personal exposure or health risk.</text>
+  <rect x="72" y="794" width="1286" height="62" rx="10" fill="#e9eee7"/>
+  <text x="95" y="822" class="tiny" fill="#71827a">HOSTING PATH DEFINED IN AWS CDK</text>
+  <text x="95" y="842" class="copy">Private S3 + CloudFront for the static app and PMTiles archive · Agent API deployment is still pending</text>
 </svg>

@@ -1,21 +1,37 @@
-# High-level architecture
+# HeatReady Atlas architecture
 
-![Europe Warming and Population Atlas architecture](images/architecture.svg)
+![HeatReady Atlas system architecture](images/architecture.svg)
 
-## Data flow
+## Map data path
 
-1. Read public monthly `tas` runs from the EURO-CORDEX archive in Amazon S3 and 2020 population counts from the GHSL raster in Amazon S3.
-2. A Python pipeline matches three EUR-11 model pairs with complete coverage through 2100, computes annual temperature changes for the two future periods, and summarizes the model spread.
-3. The pipeline allocates GHSL pixel counts once to the climate cell containing each pixel center, checks conservation within the model footprint, and encodes 174,688 cells as a 4,303-tile PMTiles vector archive.
-4. The React and MapLibre app uses the PMTiles protocol for cell data. Amazon Location Service supplies the basemap through a map-only API key with a referrer restriction.
-5. The CDK stack provisions the private S3 origin, CloudFront distribution, Amazon Location map, and referrer-restricted map key.
+1. Read monthly `tas` files from the public EURO-CORDEX archive on Amazon S3 and the GHSL 2020 population raster from its AWS-hosted source.
+2. The Python pipeline pairs three complete EUR-11 climate-model runs, computes annual-mean anomalies against 1981–2000 for 2041–2060 and 2081–2100, and summarizes the ensemble percentiles.
+3. The pipeline aggregates each GHSL pixel count once to a climate cell and checks population-total preservation within the climate grid.
+4. The derived cell attributes are packed into a local PMTiles archive. The React app loads that vector data through MapLibre GL JS; Amazon Location Service provides the basemap.
+5. AWS CDK defines a private S3 origin and CloudFront distribution for the static app and archive. The Amazon Location API key is restricted to map reads and allowed referrers.
 
-## Current state
+## Agent request path
 
-The local map, archive, and map controls are running and have been validated. The static hosting infrastructure is deployed, but the final app build and generated PMTiles archive have not been uploaded to the CloudFront origin. There is not yet a public map endpoint.
+1. A visitor selects a cell and submits a planning question. The browser sends the cell ID, scenario, period, selected temperature percentiles, 2020 population count, and prompt to the FastAPI service.
+2. Pydantic validates values and rejects unsupported IDs, non-finite/out-of-range temperatures, and inconsistent percentile order.
+3. The request creates a Strands agent with a per-request, read-only cell evidence tool and a shared WHO-guidance tool. The cell tool is bound to that validated snapshot; it cannot query arbitrary files or run shell commands.
+4. Strands invokes the configured Amazon Bedrock model. The response is returned to the browser with its model label and the evidence snapshot.
 
-## Scale and limitations
+No conversation store is configured. The prompt should not contain personal or medical details. The agent is instructed to keep long-range scenarios separate from current weather alerts and to defer local services and health decisions to qualified authorities.
 
-- The archive covers 174,688 EUR-11 cells at zoom levels 4–8.
-- The current ensemble has three complete driving-model pairs: CNRM-CERFACS-CNRM-CM5, ICHEC-EC-EARTH, and MPI-M-MPI-ESM-LR.
-- The map shows scenario-conditioned annual means and 2020 population context. It does not estimate daily extremes, future population, personal exposure, or health outcomes.
+## Current state and deployment boundary
+
+- Local map archive: built and present under ignored `data/` files.
+- Static site and S3/CloudFront distribution: CDK infrastructure is defined; the updated agent-enabled build and archive are not published.
+- Strands API: implemented as a local FastAPI service. It is not deployed and has no public endpoint.
+- Bedrock: invoked only when a local user submits a request; model access, region, and charges depend on the user's AWS account.
+- Public demo video: the script is in `DEMO.md`; recording and upload remain outstanding.
+
+Before public release, deploy the API behind an HTTPS service endpoint, use an execution role with least-privilege model invocation permissions, configure HTTPS-only CORS for the site, set the production API URL, publish the archive, and verify the full flow. Deployment is intentionally a separate approval step.
+
+## Scale and limits
+
+- 174,688 climate cells in the local archive; PMTiles source contains 4,303 vector tiles at zoom 4–8.
+- Three matched climate-model pairs; their spread is not a confidence interval.
+- Annual-mean anomalies do not show hot days, heatwaves, urban heat islands, future population, health effects, or personal exposure.
+- Population counts are cell aggregates. They are not demographic vulnerability measures.

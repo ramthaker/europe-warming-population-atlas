@@ -8,6 +8,8 @@ infra/cdk.context.json
 infra/dist/
 pipeline/.venv/
 pipeline/__pycache__/
+agent/.venv/
+agent/__pycache__/
 pipeline/tmp*/
 pipeline/data-manifest.json
 data/**

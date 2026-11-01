@@ -1,76 +1,80 @@
-# AWS Builder Center project draft
+# Builder Center article draft — HeatReady Atlas
 
-Draft only. The public endpoint and short public demo video are still required before this is ready to submit to the map challenge. Do not paste the local API key into Builder Center.
+Draft for the Strands climate-resilience challenge. Replace the pending live URL and demo-video link after hosting and recording. Confirm the required workshop completion before submission; do not claim eligibility until it is complete.
 
 ## Title
 
-Europe Warming & Population Atlas
+HeatReady Atlas: A Climate Resilience Agent for Community Planning
 
 ## Description
 
-Explore annual warming scenarios from EURO-CORDEX alongside GHSL 2020 population across Europe. Compare matched CMIP5 model ensembles for RCP 4.5 and RCP 8.5, then inspect the warming range and population estimate for each climate grid cell.
+HeatReady Atlas pairs European climate scenarios with 2020 population context, then uses a Strands agent to draft a grounded heat-preparedness brief for a selected map cell. It helps community groups turn long-term climate data into practical questions to verify with local services.
 
 ## Body
 
-### At a glance
+### The challenge
 
-![Europe Warming and Population Atlas cover](https://raw.githubusercontent.com/ramthaker/europe-warming-population-atlas/main/docs/images/europe-warming-population-cover.jpg)
+Communities need to plan for hotter summers, but climate projections are often difficult to connect to local planning. A long-term model scenario is not an alert for tomorrow, and a population grid cannot identify people who may need support. HeatReady Atlas makes those boundaries clear while giving community groups a useful next step: a short, data-grounded preparedness brief.
 
-![High-level architecture of the Europe Warming and Population Atlas](https://raw.githubusercontent.com/ramthaker/europe-warming-population-atlas/main/docs/images/architecture.svg)
+### What the project does
 
-### What this map reveals
+Visitors explore annual-mean warming scenarios across the EURO-CORDEX Europe domain alongside GHSL population counts for 2020. They choose an emissions pathway and period, switch between warming and population, and select a climate-grid cell. The selected values become the evidence for a Strands-powered community planning assistant.
 
-Climate models describe change across large grid cells, while population data shows where people live. This atlas puts those datasets on the same map so visitors can compare the patterns across Europe, switch between emissions scenarios and future periods, and inspect individual cells.
+The agent drafts a short brief with the selected cell's modelled warming median and ensemble range, its aggregated population estimate, practical heat-preparedness prompts, and a local fact to verify—such as cooling-venue access, opening hours, or capacity. Those service details are explicitly not inferred from the climate map.
 
-The map shows conditional model scenarios. It is not a weather forecast, a measure of personal exposure, or a health-risk estimate.
+### How the agent works
 
-### Data
+The Python API uses the Strands Agents SDK and Amazon Bedrock. Each request is validated, then a Strands agent is given two read-only tools:
 
-- **EURO-CORDEX CMIP5:** monthly 2-meter air temperature (`tas`) on the EUR-11 grid, paired between historical, RCP 4.5, and RCP 8.5 runs. The ensemble uses three driving models with the same CLMcom CCLM4-8-17 regional grid: CNRM-CERFACS-CNRM-CM5, ICHEC-EC-EARTH, and MPI-M-MPI-ESM-LR. A fourth catalog pair was excluded because its archive ends during 2099 and does not cover the full late-century period.
-- **GHSL GHS-POP 2020:** gridded population counts from the European Commission Joint Research Centre.
+1. `read_selected_map_cell` returns the map cell's exact scenario values, population estimate, source labels, and interpretation limits.
+2. `get_community_heat_actions` supplies general community planning prompts grounded in [WHO/Europe heat guidance](https://www.who.int/europe/news-room/fact-sheets/item/keepcool-in-the-heat).
 
-Sources: [EURO-CORDEX on the Registry of Open Data on AWS](https://registry.opendata.aws/euro-cordex/) and [GHSL population on the Registry of Open Data on AWS](https://registry.opendata.aws/ghs-pop/).
+The model must use both tools before writing its response. Its instructions prohibit health-risk scores, diagnoses, live alerts, unsupported claims about local services, and treating the population total as a count of vulnerable people. The prototype does not retain chat messages. It is not a health professional or emergency service.
 
-### Processing and map
+### Data and method
 
-For each matched model pair, monthly temperatures are combined into day-weighted annual means. The pipeline calculates future-minus-baseline change against 1981–2000 for 2041–2060 and 2081–2100, then reports the ensemble median and 10th–90th percentile range. It supports each model's native calendar, including 360-day calendars.
+- [EURO-CORDEX CMIP5 on the Registry of Open Data on AWS](https://registry.opendata.aws/euro-cordex/): monthly 2 m air temperature (`tas`) on the EUR-11 grid. Three matched historical/RCP model pairs cover the full period.
+- [GHSL GHS-POP on the Registry of Open Data on AWS](https://registry.opendata.aws/ghs-pop/): gridded residential population for 2020, from the European Commission Joint Research Centre.
+- The Python pipeline computes day-weighted annual means and future-minus-baseline changes against 1981–2000 for 2041–2060 and 2081–2100. It reports the ensemble median and 10th–90th percentile range.
+- GHSL pixel counts are assigned once to climate cells by pixel center. The data build checks total preservation within the climate-grid footprint.
 
-GHSL pixel counts are assigned once to the climate cell containing each pixel center. The aggregated in-domain total is checked against the source pixels. The current archive contains 174,688 cells and preserves 1,014,002,935 residents within the climate-grid footprint. Population is context at climate-grid scale, not a precise local count.
+### AWS and implementation
 
-The browser app uses React, TypeScript, MapLibre GL JS, and a PMTiles vector archive. Visitors can select RCP 4.5 or RCP 8.5, choose a future period, switch between warming and population layers, and click a cell to see values.
+The map uses Amazon Location Service for its basemap. Amazon S3 and CloudFront are defined in AWS CDK for static app and PMTiles delivery. Amazon Bedrock runs the Strands model for a user-submitted brief request. The current agent API is a local prototype; the refreshed app, archive, and API have not yet been published as a working live experience.
 
-### AWS architecture
+The frontend is React, TypeScript, Vite, MapLibre GL JS, and PMTiles. The data pipeline is Python. The source repository documents setup, attribution, model selection, limitations, and a video script.
 
-Amazon Location Service provides the basemap with a map-only API key restricted by referrer. The source datasets are public objects in Amazon S3. AWS CDK defines S3 and CloudFront hosting for the app and derived archive.
+### Why this matters
 
-The local map and generated archive have been validated. The archive has **not** yet been uploaded to the CloudFront origin, so a public live-map URL is not available yet.
+The project makes climate data easier to discuss in a community planning meeting. Instead of presenting a colored cell as a prediction of harm, it shows the scenario, range, population context, and uncertainty, then helps users formulate actionable questions for local authorities. A future deployment could add verified cooling-center inventories, accessible transport data, and official warning feeds—each with dated sources and clear coverage—without pretending those datasets are already present.
+
+### Measuring impact
+
+No community outcome has been measured yet. In a pilot with local partners, we would track the share of planning sessions that leave with (1) a verified local heat-warning source, (2) a checked, accessible cool-space option, and (3) a named owner and review date for the outreach plan. A short before-and-after question could measure whether participants can distinguish long-term scenarios from current heat alerts. These measures require partner consent and a locally designed process; the prototype does not track users or store personal data.
 
 ### Limitations
 
-- RCP 4.5 and RCP 8.5 are conditional CMIP5 scenario pathways, not predictions.
-- The ensemble range describes spread among these selected model runs; it is not a confidence interval.
-- Annual means do not show heatwaves, daily extremes, urban heat islands, health effects, or future population.
-- Population values are aggregated to climate-model cells and should not be interpreted as individual exposure.
+The scenarios represent annual-mean model changes, not heatwave frequency or current conditions. The selected ensemble is small and does not represent a probability distribution. GHSL population is aggregated to climate cells. Local heat vulnerability, services, access, and capacities are not measured by these inputs and need local verification. The agent's output is a planning draft, not clinical advice or an official heat-health action plan.
 
-### Attribution
+### Sources and attribution
 
-EURO-CORDEX monthly CMIP5 2-meter air temperature. GHSL GHS-POP 2020, European Commission Joint Research Centre. Follow the source dataset terms and attribution requirements when redistributing derived data.
+EURO-CORDEX monthly CMIP5 2 m temperature data; GHSL GHS-POP 2020, European Commission Joint Research Centre; and WHO/Europe, “#KeepCool in the heat” (2026). Follow the datasets' current reuse and attribution terms before redistribution.
 
-## Tags (5 maximum)
+## Tags
 
-Amazon Location Service; Climate Data; Geospatial; Open Data; AWS CDK
+Climate Resilience; Strands Agents; Amazon Bedrock; Amazon Location Service; Open Data
 
-## GitHub or GitLab repository
+## Repository
 
-[Europe Warming & Population Atlas on GitHub](https://github.com/ramthaker/europe-warming-population-atlas). The repository contains the app, CDK infrastructure, and reproducible data pipeline; local credentials and the generated archive are excluded.
+https://github.com/ramthaker/europe-warming-population-atlas
 
 ## Endpoint or live demo
 
-Pending public hosting of the derived PMTiles archive and a correctly configured app build. The local address is `http://localhost:5173/` and is not publicly accessible.
+Pending a verified public deployment of the map, archive, and agent API.
 
 ## Demo video
 
-Required for the challenge submission: add a public video link under three minutes showing the live map, scenario and period controls, population layer, and a clicked cell.
+Pending. Use the sub-three-minute recording script in `docs/DEMO.md` and add the public video URL here after upload.
 
 ## Notebook
 

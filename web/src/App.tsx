@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import maplibregl, { Map, MapMouseEvent } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -20,6 +20,10 @@ function App() {
   const [selected, setSelected] = useState<ClimateCellProperties | null>(null);
   const [mapStatus, setMapStatus] = useState('Loading map…');
   const [hasClimateData, setHasClimateData] = useState(false);
+  const [agentQuestion, setAgentQuestion] = useState('Draft a short heat-preparedness brief for a local community group.');
+  const [agentBrief, setAgentBrief] = useState('');
+  const [agentStatus, setAgentStatus] = useState('Select a map cell to ground a community planning brief in its climate and population data.');
+  const [agentBusy, setAgentBusy] = useState(false);
   const mapRef = useRef<Map | null>(null);
   const selectedLayerRef = useRef(showPopulation);
 
@@ -176,17 +180,51 @@ function App() {
   const median = selected ? Number(selected[metricKeys.median]) : null;
   const population = selected ? Number(selected.population_2020) : null;
 
+  async function askResilienceAgent(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selected || !agentQuestion.trim() || agentBusy) return;
+    setAgentBusy(true);
+    setAgentBrief('');
+    setAgentStatus('The Strands agent is checking the selected cell and its community guidance…');
+    try {
+      const response = await fetch(`${import.meta.env.VITE_AGENT_API_URL || 'http://127.0.0.1:8000'}/api/brief`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: agentQuestion.trim(),
+          cell: {
+            cell_id: String(selected.cell_id),
+            scenario,
+            period,
+            p10_c: Number(selected[metricKeys.low]),
+            median_c: Number(selected[metricKeys.median]),
+            p90_c: Number(selected[metricKeys.high]),
+            population_2020: Math.round(Number(selected.population_2020)),
+          },
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.detail || 'The agent could not create a brief.');
+      setAgentBrief(result.brief);
+      setAgentStatus(`Grounded in cell ${selected.cell_id} · ${labels[scenario]} · ${periods[period]} · model ${result.model_id}`);
+    } catch (error) {
+      setAgentStatus(error instanceof Error ? error.message : 'Could not reach the local Strands service.');
+    } finally {
+      setAgentBusy(false);
+    }
+  }
+
   return (
     <main className="app-shell">
       <header className="topbar">
-        <a className="brand" href="#top" aria-label="Climate Atlas home"><span className="brand-mark">C</span><span>FIELDNOTES <b>/ CLIMATE ATLAS</b></span></a>
-        <div className="topbar-note"><span className="live-dot" /> MODEL EXPLORER <span className="topbar-divider">·</span> EUROPE</div>
+        <a className="brand" href="#top" aria-label="HeatReady Atlas home"><span className="brand-mark">H</span><span>HEATREADY <b>/ EUROPE ATLAS</b></span></a>
+        <div className="topbar-note"><span className="live-dot" /> CLIMATE RESILIENCE <span className="topbar-divider">·</span> STRANDS AGENT</div>
       </header>
 
       <section className="intro" id="top">
-        <div className="eyebrow"><span>01</span><i /> A EUROPEAN CLIMATE ATLAS</div>
-        <h1>Where will warming<br /><em>meet everyday life?</em></h1>
-        <p className="intro-copy">Explore modelled temperature change across Europe alongside the places people live.</p>
+        <div className="eyebrow"><span>01</span><i /> A EUROPEAN CLIMATE RESILIENCE ATLAS</div>
+        <h1>See the warming.<br /><em>Plan for people.</em></h1>
+        <p className="intro-copy">Explore long-run climate scenarios alongside where people live, then ask a Strands agent for a grounded community preparedness brief.</p>
       </section>
 
       <section className="workspace" aria-label="Interactive climate map">
@@ -267,6 +305,27 @@ function App() {
             </>}
           </div>
         </div>
+      </section>
+
+      <section className="agent-section" aria-labelledby="agent-heading">
+        <div className="agent-heading-row">
+          <div>
+            <div className="eyebrow agent-eyebrow"><span>02</span><i /> CLIMATE RESILIENCE · STRANDS AGENT</div>
+            <h2 id="agent-heading">Turn a map cell into a <em>community plan.</em></h2>
+            <p className="agent-intro">Ask for practical heat-preparedness planning. The agent checks the selected cell values and a small, cited set of WHO community guidance before drafting.</p>
+          </div>
+          <div className="agent-badge"><span className="agent-spark">✳</span><span>GROUNDED<br />TWO-TOOL AGENT</span></div>
+        </div>
+        <form className="agent-form" onSubmit={askResilienceAgent}>
+          <label htmlFor="agent-question">What should the community plan for?</label>
+          <div className="agent-input-row">
+            <input id="agent-question" value={agentQuestion} maxLength={700} onChange={(event) => setAgentQuestion(event.target.value)} placeholder="e.g. What should we verify before summer?" />
+            <button type="submit" disabled={!selected || agentBusy || agentQuestion.trim().length < 8}>{agentBusy ? 'Working…' : 'Draft a brief'} <span>↗</span></button>
+          </div>
+          <div className="agent-status" role="status">{agentStatus}</div>
+        </form>
+        {agentBrief && <article className="agent-response"><div className="agent-response-label">COMMUNITY PREPAREDNESS BRIEF</div><p>{agentBrief}</p></article>}
+        <div className="agent-boundary">Planning support only. EURO-CORDEX annual-mean scenarios are not current heat alerts or health-risk estimates. Confirm local warnings, services, venue accessibility, and capacity with local authorities.</div>
       </section>
 
       <section className="context-row">
