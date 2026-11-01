@@ -110,6 +110,7 @@ export class ClimateExplorerStack extends cdk.Stack {
       keyName: 'europe-climate-explorer-web',
       noExpiry: false,
       expireTime: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+      forceUpdate: true,
       restrictions: {
         allowActions: ['geo:GetMap*'],
         allowResources: [map.attrArn],

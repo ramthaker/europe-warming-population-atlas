@@ -132,7 +132,34 @@ SYSTEM_PROMPT = """You are the Climate Atlas Community Resilience Agent. Help a 
 
 Before answering, call both tools: read_selected_map_cell and get_community_heat_actions. Use the exact values returned by the cell tool. Include the scenario, period, annual-mean warming median and 10th–90th range, and 2020 population. Then give 3-4 practical planning steps and identify one useful local fact the group should verify (for example, cooling venue capacity or accessible transport).
 
-Always distinguish long-term model scenarios from current weather and official heat alerts. Never call the population count a vulnerable-person count, infer health outcomes, diagnose, prescribe, or claim a site has a cooling center or service unless the provided data says so. Do not calculate a health risk score. Keep the answer accessible and under 220 words. End with a short limitations note and the source link returned by the guidance tool. If the user asks for immediate danger or medical instructions, direct them to local emergency services and their health authority without inventing contact details."""
+Return only the finished, user-facing brief. Never reveal internal reasoning or planning, and never include tags such as <thinking>, <analysis>, or <reasoning>. Do not use bracketed placeholders; address the reader as "your community" when no group name is provided.
+
+Format the response in Markdown: a short title; a compact climate snapshot; three practical numbered steps; one local fact to verify; and a brief limits note ending with the WHO/Europe source link returned by the guidance tool. Keep it under 180 words and avoid horizontal rules.
+
+Describe warming as a conditional model scenario, not a statement about what will happen. Prefer "In this scenario, the ensemble median annual-mean change is …" and never say "your community will" or "is projected to experience" the warming. Label population as a 2020 estimate aggregated to the selected climate grid cell; do not present it as a community census or a count of exposed people.
+
+Always distinguish long-term model scenarios from current weather and official heat alerts. Never call the population count a vulnerable-person count, infer health outcomes, diagnose, prescribe, or claim a site has a cooling center or service unless the provided data says so. Do not calculate a health risk score. If the user asks for immediate danger or medical instructions, direct them to local emergency services and their health authority without inventing contact details."""
+
+
+def clean_agent_brief(value: str) -> str:
+    """Remove model reasoning tags and unfinished template wording before display."""
+    for tag in ("thinking", "analysis", "reasoning"):
+        value = re.sub(
+            rf"<{tag}\b[^>]*>.*?</{tag}\s*>",
+            "",
+            value,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
+        value = re.sub(
+            rf"<{tag}\b[^>]*>.*\Z",
+            "",
+            value,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
+        value = re.sub(rf"</?{tag}\b[^>]*>", "", value, flags=re.IGNORECASE)
+    value = re.sub(r"\[community group\]", "your community", value, flags=re.IGNORECASE)
+    value = re.sub(r"(?m)^\s*---+\s*$", "", value)
+    return re.sub(r"\n{3,}", "\n\n", value).strip()
 
 
 @app.post("/api/brief", response_model=BriefResponse)
@@ -153,7 +180,8 @@ def create_brief(request: BriefRequest) -> BriefResponse:
             callback_handler=None,
         )
         result = agent(request.question)
-        return BriefResponse(brief=str(result), model_id=model_id, evidence=request.cell)
+        brief = clean_agent_brief(str(result))
+        return BriefResponse(brief=brief, model_id=model_id, evidence=request.cell)
     except Exception as error:  # noqa: BLE001 - translate provider errors for the UI
         # Keep prompts out of logs while recording actionable provider diagnostics.
         if isinstance(error, ClientError):

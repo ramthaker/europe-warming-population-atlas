@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import maplibregl, { Map, MapMouseEvent } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -9,6 +9,65 @@ const region = (import.meta.env.VITE_AWS_REGION as string | undefined) || 'eu-ce
 const mapName = (import.meta.env.VITE_LOCATION_MAP_NAME as string | undefined) || 'europe-climate-explorer-map';
 const dataUrl = (import.meta.env.VITE_DATA_URL as string | undefined) || `${window.location.origin}/climate-cells.pmtiles`;
 const sourceLayer = 'climate_cells';
+
+function renderInlineMarkdown(value: string): ReactNode[] {
+  const tokens = value.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\(https:\/\/[^)\s]+\))/g);
+  return tokens.map((token, index) => {
+    if (token.startsWith('**') && token.endsWith('**')) {
+      return <strong key={index}>{token.slice(2, -2)}</strong>;
+    }
+    const link = token.match(/^\[([^\]]+)\]\((https:\/\/[^)\s]+)\)$/);
+    if (link) {
+      return <a key={index} href={link[2]} target="_blank" rel="noreferrer">{link[1]}</a>;
+    }
+    return token;
+  });
+}
+
+function BriefContent({ text }: { text: string }) {
+  const lines = text.split(/\r?\n/);
+  const blocks: ReactNode[] = [];
+  let index = 0;
+
+  while (index < lines.length) {
+    const line = lines[index].trim();
+    if (!line || /^---+$/.test(line)) {
+      index += 1;
+      continue;
+    }
+
+    const heading = line.match(/^#{1,3}\s+(.+)$/);
+    if (heading) {
+      blocks.push(<h3 key={index}>{renderInlineMarkdown(heading[1])}</h3>);
+      index += 1;
+      continue;
+    }
+
+    const listKind = /^[-*]\s+/.test(line) ? 'ul' : /^\d+\.\s+/.test(line) ? 'ol' : null;
+    if (listKind) {
+      const items: ReactNode[] = [];
+      while (index < lines.length) {
+        const item = lines[index].trim().match(listKind === 'ul' ? /^[-*]\s+(.+)$/ : /^\d+\.\s+(.+)$/);
+        if (!item) break;
+        items.push(<li key={index}>{renderInlineMarkdown(item[1])}</li>);
+        index += 1;
+      }
+      blocks.push(listKind === 'ul' ? <ul key={`list-${index}`}>{items}</ul> : <ol key={`list-${index}`}>{items}</ol>);
+      continue;
+    }
+
+    const paragraph = [line];
+    index += 1;
+    while (index < lines.length && lines[index].trim() && !/^#{1,3}\s+/.test(lines[index].trim())
+      && !/^(?:[-*]\s+|\d+\.\s+)/.test(lines[index].trim()) && !/^---+$/.test(lines[index].trim())) {
+      paragraph.push(lines[index].trim());
+      index += 1;
+    }
+    blocks.push(<p key={index}>{renderInlineMarkdown(paragraph.join(' '))}</p>);
+  }
+
+  return <div className="agent-response-content">{blocks}</div>;
+}
 
 const labels: Record<Scenario, string> = { rcp45: 'RCP 4.5', rcp85: 'RCP 8.5' };
 const periods: Record<Period, string> = { mid: '2041–2060', late: '2081–2100' };
@@ -327,7 +386,7 @@ function App() {
           </div>
           <div className="agent-status" role="status">{agentStatus}</div>
         </form>
-        {agentBrief && <article className="agent-response"><div className="agent-response-label">COMMUNITY PREPAREDNESS BRIEF</div><p>{agentBrief}</p></article>}
+        {agentBrief && <article className="agent-response"><div className="agent-response-label">COMMUNITY PREPAREDNESS BRIEF</div><BriefContent text={agentBrief} /></article>}
         <div className="agent-boundary">Planning support only. EURO-CORDEX annual-mean scenarios are not current heat alerts or health-risk estimates. Confirm local warnings, services, venue accessibility, and capacity with local authorities.</div>
       </section>
 
