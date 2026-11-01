@@ -10,6 +10,10 @@ HeatReady Atlas: A Climate Resilience Agent for Community Planning
 
 HeatReady Atlas pairs European climate scenarios with 2020 population context, then uses a Strands agent to draft a grounded heat-preparedness brief for a selected map cell. It helps community groups turn long-term climate data into practical questions to verify with local services.
 
+## Cover image
+
+Upload [heatready-atlas-article-cover.jpg](images/heatready-atlas-article-cover.jpg) in the Builder Center cover-image field. It is 1200×675 and below the 2 MB upload limit.
+
 ## Body
 
 ### The challenge
