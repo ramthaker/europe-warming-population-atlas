@@ -12,7 +12,7 @@ HeatReady Atlas pairs European climate scenarios with 2020 population context, t
 
 ## Cover image
 
-Upload [heatready-atlas-article-cover.jpg](images/heatready-atlas-article-cover.jpg) in the Builder Center cover-image field. It is 1200×675 and below the 2 MB upload limit.
+Recommended: upload the labeled [HeatReady Atlas cover](images/heatready-atlas-article-cover-labeled.jpg) in the Builder Center cover-image field. It names the project and clarifies the climate-scenario, population, and community-planning themes. It is 1200×675 and below the 2 MB upload limit. A clean, text-free [map-only version](images/heatready-atlas-article-cover.jpg) is available too.
 
 ## Body
 
