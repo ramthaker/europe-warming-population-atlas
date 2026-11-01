@@ -56,7 +56,7 @@ Amazon Location Service; Climate Data; Geospatial; Open Data; AWS CDK
 
 ## GitHub or GitLab repository
 
-Not available yet. The project folder does not have a public repository URL.
+[Europe Warming & Population Atlas on GitHub](https://github.com/ramthaker/europe-warming-population-atlas). The repository contains the app, CDK infrastructure, and reproducible data pipeline; local credentials and the generated archive are excluded.
 
 ## Endpoint or live demo
 
