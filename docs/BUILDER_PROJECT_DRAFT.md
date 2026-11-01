@@ -1,6 +1,6 @@
 # Builder Center article draft — HeatReady Atlas
 
-Draft for the Strands climate-resilience challenge. Replace the pending live URL and demo-video link after hosting and recording. Confirm the required workshop completion before submission; do not claim eligibility until it is complete.
+Draft for the Strands climate-resilience challenge. The map, archive, and agent API are live. Add the public demo-video link after recording, and confirm the required workshop completion before submission; do not claim eligibility until it is complete.
 
 ## Title
 
@@ -22,6 +22,8 @@ Visitors explore annual-mean warming scenarios across the EURO-CORDEX Europe dom
 
 The agent drafts a short brief with the selected cell's modelled warming median and ensemble range, its aggregated population estimate, practical heat-preparedness prompts, and a local fact to verify—such as cooling-venue access, opening hours, or capacity. Those service details are explicitly not inferred from the climate map.
 
+The map is also a reusable location-data pattern: it layers a derived climate-cell dataset and population counts over an Amazon Location Service basemap, then lets visitors compare scenarios and inspect a cell. It makes the dataset, processing method, and interpretation limits available alongside the live map.
+
 ### How the agent works
 
 The Python API uses the Strands Agents SDK and Amazon Bedrock. Each request is validated, then a Strands agent is given two read-only tools:
@@ -40,7 +42,7 @@ The model must use both tools before writing its response. Its instructions proh
 
 ### AWS and implementation
 
-The map uses Amazon Location Service for its basemap. Amazon S3 and CloudFront are defined in AWS CDK for static app and PMTiles delivery. Amazon Bedrock runs the Strands model for a user-submitted brief request. The current agent API is a local prototype; the refreshed app, archive, and API have not yet been published as a working live experience.
+Amazon Location Service supplies the MapLibre basemap through a map-only API key restricted to the live site's referrer. The React app and PMTiles archive are hosted in Amazon S3 behind CloudFront. A CloudFront `/api/*` route reaches the FastAPI Strands agent on AWS Lambda; the Lambda execution role invokes the EU Amazon Nova Lite profile in Amazon Bedrock after a visitor submits a request. The live app is public and does not require sign-in.
 
 The frontend is React, TypeScript, Vite, MapLibre GL JS, and PMTiles. The data pipeline is Python. The source repository documents setup, attribution, model selection, limitations, and a video script.
 
@@ -70,11 +72,11 @@ https://github.com/ramthaker/europe-warming-population-atlas
 
 ## Endpoint or live demo
 
-Pending a verified public deployment of the map, archive, and agent API.
+https://d1p7fe2ijqxr2z.cloudfront.net
 
 ## Demo video
 
-Pending. Use the sub-three-minute recording script in `docs/DEMO.md` and add the public video URL here after upload.
+Pending. Use the sub-three-minute recording script in `docs/DEMO.md` and add the public video URL here after upload. The video must show the live map and what visitors can explore.
 
 ## Notebook
 
